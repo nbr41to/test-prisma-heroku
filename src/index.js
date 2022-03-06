@@ -1,16 +1,16 @@
-const express = require('express')
-const bodyParser = require('body-parser')
-const { PrismaClient } = require('@prisma/client')
+const express = require('express');
+const bodyParser = require('body-parser');
+const { PrismaClient } = require('@prisma/client');
 
-const prisma = new PrismaClient()
-const app = express()
+const prisma = new PrismaClient();
+const app = express();
 
-app.use(bodyParser.json())
-app.use(express.static('public'))
+app.use(bodyParser.json());
+app.use(express.static('public'));
 
 app.get(`/api`, async (req, res) => {
-  res.json({ up: true })
-})
+  res.json({ up: true });
+});
 
 app.get(`/api/seed`, async (req, res) => {
   const seedUser = {
@@ -32,7 +32,7 @@ app.get(`/api/seed`, async (req, res) => {
         },
       ],
     },
-  }
+  };
 
   try {
     await prisma.post.deleteMany({
@@ -41,86 +41,85 @@ app.get(`/api/seed`, async (req, res) => {
           email: 'jane@prisma.io',
         },
       },
-    })
+    });
     await prisma.user.deleteMany({
       where: {
         email: 'jane@prisma.io',
       },
-    })
+    });
 
     const result = await prisma.user.create({
       data: seedUser,
-    })
-    res.json(result)
+    });
+    res.json(result);
   } catch (e) {
-    console.error(e)
-    res.sendStatus(500)
+    console.error(e);
+    res.sendStatus(500);
   }
-})
+});
 
 app.post(`/api/user`, async (req, res) => {
   const result = await prisma.user.create({
     data: {
       ...req.body,
     },
-  })
-  res.json(result)
-})
+  });
+  res.json(result);
+});
 
 app.post(`/api/post`, async (req, res) => {
-  const { title, content, authorEmail } = req.body
+  const {} = req.body;
   const result = await prisma.post.create({
     data: {
-      title,
-      content,
-      published: false,
-      author: { connect: { email: authorEmail } },
+      content: '歯磨き',
+      completed: false,
+      author: { connect: { email: 'jane@prisma.io' } },
     },
-  })
-  res.json(result)
-})
+  });
+  res.json(result);
+});
 
 app.put('/api/publish/:id', async (req, res) => {
-  const { id } = req.params
+  const { id } = req.params;
   const post = await prisma.post.update({
     where: {
       id: parseInt(id),
     },
     data: { published: true },
-  })
-  res.json(post)
-})
+  });
+  res.json(post);
+});
 
 app.delete(`/api/post/:id`, async (req, res) => {
-  const { id } = req.params
+  const { id } = req.params;
   const post = await prisma.post.delete({
     where: {
       id: parseInt(id),
     },
-  })
-  res.json(post)
-})
+  });
+  res.json(post);
+});
 
 app.get(`/api/post/:id`, async (req, res) => {
-  const { id } = req.params
+  const { id } = req.params;
   const post = await prisma.post.findUnique({
     where: {
       id: parseInt(id),
     },
-  })
-  res.json(post)
-})
+  });
+  res.json(post);
+});
 
 app.get('/api/feed', async (req, res) => {
   const posts = await prisma.post.findMany({
     where: { published: true },
     include: { author: true },
-  })
-  res.json(posts)
-})
+  });
+  res.json(posts);
+});
 
 app.get('/api/filterPosts', async (req, res) => {
-  const { searchString } = req.query
+  const { searchString } = req.query;
   const draftPosts = await prisma.post.findMany({
     where: {
       OR: [
@@ -136,13 +135,13 @@ app.get('/api/filterPosts', async (req, res) => {
         },
       ],
     },
-  })
-  res.json(draftPosts)
-})
+  });
+  res.json(draftPosts);
+});
 
-const PORT = process.env.PORT || 3000
+const PORT = process.env.PORT || 3000;
 const server = app.listen(PORT, () =>
   console.log(
     `🚀 Server ready at: http://localhost:${PORT}\n⭐️ See sample requests: http://pris.ly/e/ts/rest-express#3-using-the-rest-api`,
   ),
-)
+);
